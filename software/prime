@@ -1,0 +1,29 @@
+AREA    PRIME, CODE, READONLY
+    ENTRY
+
+is_prime
+    MOV     R2, #2          ; Start divisor at 2
+    MOV     R3, #0          ; Initialize remainder to 0
+
+check_divisor
+    MOV     R0, #31         ; Number to check for primality (change as needed)
+    MOV     R1, R2          ; Move divisor to R1
+    MOV     R3, #0          ; Reset remainder
+
+    ; Division routine
+div_loop
+    CMP     R0, R1          ; Check if divisor is greater than number
+    BLT     not_divisible   ; If yes, number is prime
+    SUB     R0, R0, R1      ; Subtract divisor from number
+    ADD     R3, R3, #1      ; Increment remainder
+    B       div_loop
+
+not_divisible
+    CMP     R0, #1          ; Check if remainder is 1
+    MOVNE   R0, #0          ; If not, number is not prime
+    MOVEQ   R0, #1          ; If yes, number is prime
+
+    ; Exit
+    B       $               ; Infinite loop
+
+    END
