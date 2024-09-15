@@ -1,0 +1,10 @@
+Using RSA, encrypt the message "Asymmetric Encryption" with the public key (n, e). Then decrypt the ciphertext with the private key (n, d) to verify the original message. 
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+
+def rsa_encrypt_decrypt(message, pub_key, priv_key):
+    cipher = PKCS1_OAEP.new(pub_key)
+    encrypted = cipher.encrypt(message.encode())
+    cipher = PKCS1_OAEP.new(priv_key)
+    decrypted = cipher.decrypt(encrypted)
+    return encrypted, decrypted.decode()
