@@ -1,0 +1,20 @@
+Encrypt the message "the house is being sold tonight" using one of the following ciphers. Ignore the space between words. Decrypt the message to get the original plaintext: · Vigenere cipher with key: "dollars" · Autokey cipher with key = 7
+def vigenere_cipher_encrypt(plaintext, key):
+    key = key.lower()
+    return ''.join([chr(((ord(plaintext[i]) - 97 + ord(key[i % len(key)]) - 97) % 26) + 97) for i in range(len(plaintext))])
+
+def vigenere_cipher_decrypt(ciphertext, key):
+    key = key.lower()
+    return ''.join([chr(((ord(ciphertext[i]) - 97 - (ord(key[i % len(key)]) - 97)) % 26) + 97) for i in range(len(ciphertext))])
+
+def autokey_cipher_encrypt(plaintext, key):
+    extended_key = [key] + [ord(c) - 97 for c in plaintext[:-1]]
+    return ''.join([chr(((ord(plaintext[i]) - 97 + extended_key[i]) % 26) + 97) for i in range(len(plaintext))])
+
+def autokey_cipher_decrypt(ciphertext, key):
+    decrypted = []
+    for i, c in enumerate(ciphertext):
+        plain_char = (ord(c) - 97 - key) % 26 + 97
+        decrypted.append(chr(plain_char))
+        key = plain_char - 97
+    return ''.join(decrypted)
