@@ -1,0 +1,17 @@
+7. As part of a project to enhance the security of communication in a peer-to-peer file sharing system, you are tasked with implementing a secure key exchange mechanism using the Diffie-Hellman algorithm. Each peer must establish a shared secret key with another peer over an insecure channel. Implement the Diffie-Hellman key exchange protocol, enabling peers to generate their public and private keys and securely compute the shared secret key. Measure the time taken for key generation and key exchange processes.
+import random
+import time
+
+def diffie_hellman(p, g, a=None, b=None):
+    if a is None:
+        a = random.randint(2, p-1)
+    if b is None:
+        b = random.randint(2, p-1)
+    
+    A = pow(g, a, p)
+    B = pow(g, b, p)
+    
+    shared_secret_a = pow(B, a, p)
+    shared_secret_b = pow(A, b, p)
+    
+    return shared_secret_a, shared_secret_b
