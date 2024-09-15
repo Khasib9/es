@@ -1,0 +1,20 @@
+Encrypt the message "I am learning information security" using one of the following ciphers. Ignore the space between words. Decrypt the message to get the original plaintext: a) Additive cipher with key = 20 b) Multiplicative cipher with key = 15 c) Affine cipher with key = (15, 20)
+def additive_cipher_encrypt(plaintext, key=20):
+    return ''.join([chr(((ord(c) - 97 + key) % 26) + 97) for c in plaintext.lower() if c.isalpha()])
+
+def additive_cipher_decrypt(ciphertext, key=20):
+    return ''.join([chr(((ord(c) - 97 - key) % 26) + 97) for c in ciphertext.lower() if c.isalpha()])
+
+def multiplicative_cipher_encrypt(plaintext, key=15):
+    return ''.join([chr(((ord(c) - 97) * key % 26) + 97) for c in plaintext.lower() if c.isalpha()])
+
+def multiplicative_cipher_decrypt(ciphertext, key=15):
+    inv_key = pow(key, -1, 26)
+    return ''.join([chr(((ord(c) - 97) * inv_key % 26) + 97) for c in ciphertext.lower() if c.isalpha()])
+
+def affine_cipher_encrypt(plaintext, a=15, b=20):
+    return ''.join([chr(((ord(c) - 97) * a + b) % 26 + 97) for c in plaintext.lower() if c.isalpha()])
+
+def affine_cipher_decrypt(ciphertext, a=15, b=20):
+    inv_a = pow(a, -1, 26)
+    return ''.join([chr(((ord(c) - 97 - b) * inv_a % 26) + 97) for c in ciphertext.lower() if c.isalpha()])
