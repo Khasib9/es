@@ -88,3 +88,356 @@ if __name__ == "__main__":
         print("\n📄 Retrieved Chunks:\n")
         for i, chunk in enumerate(sources, 1):
             print(f"{i}. {chunk[:200]}...")
+
+html
+document.addEventListener("DOMContentLoaded", () => {
+    const chatWindow = document.getElementById('chat-window');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const suggestionChipsContainer = document.getElementById('suggestion-chips');
+
+    // Display the initial greeting from the bot
+    displayBotMessage("Hello! What do youo wanna know about health today?");
+    displaySuggestionChips(['Explain a medical condition', 'Describe symptoms', 'Information on treatments']);
+
+
+    chatForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const query = userInput.value.trim();
+        if (query) {
+            displayUserMessage(query);
+            userInput.value = '';
+            suggestionChipsContainer.innerHTML = ''; // Clear suggestions
+            fetchBotResponse(query);
+        }
+    });
+
+    function displayUserMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message user-message';
+        messageElement.textContent = message;
+        chatWindow.appendChild(messageElement);
+        scrollToBottom();
+    }
+
+    function displayBotMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message bot-message';
+        messageElement.textContent = message;
+        chatWindow.appendChild(messageElement);
+        scrollToBottom();
+    }
+    
+    function displaySuggestionChips(suggestions) {
+        suggestionChipsContainer.innerHTML = ''; // Clear previous suggestions
+        suggestions.forEach(suggestion => {
+            const chip = document.createElement('button');
+            chip.className = 'chip';
+            chip.textContent = suggestion;
+            chip.onclick = () => {
+                displayUserMessage(suggestion);
+                suggestionChipsContainer.innerHTML = ''; // Clear suggestions after click
+                fetchBotResponse(suggestion);
+            };
+            suggestionChipsContainer.appendChild(chip);
+        });
+    }
+
+    async function fetchBotResponse(query) {
+        typingIndicator.style.display = 'block';
+        scrollToBottom();
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            // NOTE: The backend currently only returns `answer` and `sources`.
+            // For a true Tars-like experience, you would modify the backend 
+            // to also return a list of suggestions.
+            // For now, we'll just display the answer.
+            
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                displayBotMessage(data.answer);
+                // Example of adding new suggestions after a response
+                // displaySuggestionChips(['Follow up question?', 'Start over']);
+            }, 1000); // Simulate bot thinking time
+
+        } catch (error) {
+            console.error("Error fetching bot response:", error);
+            typingIndicator.style.display = 'none';
+            displayBotMessage("I'm sorry, I'm having trouble connecting. Please try again later.");
+        }
+    }
+
+    function scrollToBottom() {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+});
+
+css
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #e9f2f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.chat-widget {
+    width: 400px;
+    height: 90vh;
+    max-height: 700px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.bot-avatar img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 15px;
+    border: 2px solid white;
+}
+
+.header-text h2 {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.header-text p {
+    margin: 0;
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+.chat-window {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 75%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bot-message {
+    background-color: #f1f0f0;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+
+.user-message {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+
+.typing-indicator {
+    padding: 0 20px 10px;
+}
+
+.typing-indicator span {
+    height: 10px;
+    width: 10px;
+    background-color: #b0b0b0;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+.suggestion-chips {
+    padding: 5px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    background-color: #f1f0f0;
+    border: 1px solid #007bff;
+    color: #007bff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+.chip:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.chat-form {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+#user-input {
+    flex-grow: 1;
+    border: none;
+    padding: 10px;
+    font-size: 1em;
+    outline: none;
+    background: transparent;
+}
+
+.chat-form button {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: #007bff;
+    transition: transform 0.2s;
+}
+.chat-form button:hover {
+    transform: scale(1.1);
+}
+
+jss
+document.addEventListener("DOMContentLoaded", () => {
+    const chatWindow = document.getElementById('chat-window');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const suggestionChipsContainer = document.getElementById('suggestion-chips');
+
+    // Display the initial greeting from the bot
+    displayBotMessage("Hello! What do youo wanna know about health today?");
+    displaySuggestionChips(['Explain a medical condition', 'Describe symptoms', 'Information on treatments']);
+
+
+    chatForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const query = userInput.value.trim();
+        if (query) {
+            displayUserMessage(query);
+            userInput.value = '';
+            suggestionChipsContainer.innerHTML = ''; // Clear suggestions
+            fetchBotResponse(query);
+        }
+    });
+
+    function displayUserMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message user-message';
+        messageElement.textContent = message;
+        chatWindow.appendChild(messageElement);
+        scrollToBottom();
+    }
+
+    function displayBotMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message bot-message';
+        messageElement.textContent = message;
+        chatWindow.appendChild(messageElement);
+        scrollToBottom();
+    }
+    
+    function displaySuggestionChips(suggestions) {
+        suggestionChipsContainer.innerHTML = ''; // Clear previous suggestions
+        suggestions.forEach(suggestion => {
+            const chip = document.createElement('button');
+            chip.className = 'chip';
+            chip.textContent = suggestion;
+            chip.onclick = () => {
+                displayUserMessage(suggestion);
+                suggestionChipsContainer.innerHTML = ''; // Clear suggestions after click
+                fetchBotResponse(suggestion);
+            };
+            suggestionChipsContainer.appendChild(chip);
+        });
+    }
+
+    async function fetchBotResponse(query) {
+        typingIndicator.style.display = 'block';
+        scrollToBottom();
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            // NOTE: The backend currently only returns `answer` and `sources`.
+            // For a true Tars-like experience, you would modify the backend 
+            // to also return a list of suggestions.
+            // For now, we'll just display the answer.
+            
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                displayBotMessage(data.answer);
+                // Example of adding new suggestions after a response
+                // displaySuggestionChips(['Follow up question?', 'Start over']);
+            }, 1000); // Simulate bot thinking time
+
+        } catch (error) {
+            console.error("Error fetching bot response:", error);
+            typingIndicator.style.display = 'none';
+            displayBotMessage("I'm sorry, I'm having trouble connecting. Please try again later.");
+        }
+    }
+
+    function scrollToBottom() {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+});
